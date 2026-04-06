@@ -1,0 +1,76 @@
+# ── Model weights (too large for GitHub) ──────────────
+*.pth
+*.pt
+*.ckpt
+*.h5
+*.pkl
+
+# ── Python cache ───────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# ── Jupyter / Colab ────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+# Uncomment below if you want to exclude the notebook too
+# *.ipynb
+
+# ── Virtual environments ───────────────────────────────
+venv/
+env/
+.env/
+.venv/
+ENV/
+
+# ── Environment variables (never push secrets) ─────────
+.env
+.env.local
+*.env
+
+# ── Streamlit ──────────────────────────────────────────
+.streamlit/secrets.toml
+
+# ── Dataset files (download via kagglehub instead) ─────
+data/
+datasets/
+*.csv
+*.json
+!package.json
+
+# ── Generated images from notebook ─────────────────────
+*.png
+*.jpg
+*.jpeg
+# Exception: keep any images you explicitly add to repo
+!assets/
+!docs/
+
+# ── OS files ───────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+desktop.ini
+
+# ── IDEs ───────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ── Logs and temp ──────────────────────────────────────
+*.log
+*.tmp
+*.bak
+/tmp/
+
+# ── Colab-specific ─────────────────────────────────────
+/content/
+sample_data/

@@ -1,0 +1,537 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html, body, [class*="css"], .stApp {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    background-color: #f4f5f7 !important;
+    color: #1a1a2e;
+}
+
+#MainMenu, footer, header, .stDeployButton {
+    visibility: hidden;
+}
+
+.block-container {
+    padding: 0 !important;
+    max-width: 100% !important;
+}
+
+/* ── TOPBAR ─────────────────────────────────────── */
+.topbar {
+    position: sticky;
+    top: 0;
+    z-index: 999;
+    background: rgba(255, 255, 255, 0.97);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid #e2e8f0;
+    box-shadow: 0 1px 0 0 #059669
+18, 0 4px 24px rgba(0, 0, 0, 0.06);
+    padding: 13px 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.topbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+}
+
+.topbar-logo {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: #ecfdf5;
+    border: 1px solid #6ee7b7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 19px;
+    box-shadow: 0 0 18px #10b98122;
+}
+
+.topbar-name {
+    font-family: 'Space Mono', monospace;
+    font-size: 17px;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+}
+
+.topbar-name em {
+    font-style: normal;
+    color: #059669;
+}
+
+.topbar-sub {
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 2px;
+    letter-spacing: 0.1px;
+}
+
+.topbar-right {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.topbar-chip {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    padding: 5px 13px;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    color: #64748b;
+    background: #f8fafc;
+    letter-spacing: 0.4px;
+}
+
+.live-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 8px #10b981;
+    display: inline-block;
+    margin-right: 6px;
+    animation: blink 2.4s ease-in-out infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; box-shadow: 0 0 8px #10b981; }
+    50%       { opacity: 0.3; box-shadow: none; }
+}
+
+/* ── STATS BAR ──────────────────────────────────── */
+.stats-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-bottom: 1px solid #e2e8f0;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.stat-cell {
+    padding: 16px 28px;
+    border-right: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.stat-cell:last-child {
+    border-right: none;
+}
+
+.stat-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: #94a3b8;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.stat-value {
+    font-family: 'Space Mono', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.5px;
+}
+
+.stat-sub {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: #cbd5e1;
+    margin-top: 1px;
+}
+
+/* ── COLUMN HEADERS ─────────────────────────────── */
+.col-header {
+    padding: 22px 28px 0;
+}
+
+.col-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: #059669;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.col-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #0f172a;
+    letter-spacing: -0.2px;
+    margin-bottom: 16px;
+}
+
+/* ── UPLOAD ─────────────────────────────────────── */
+.upload-hint {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-bottom: 10px;
+    padding: 0 28px;
+}
+
+[data-testid="stFileUploadDropzone"] {
+    background: #ffffff !important;
+    border: 1.5px dashed #cbd5e1 !important;
+    border-radius: 12px !important;
+    transition: border-color 0.2s, background 0.2s !important;
+}
+
+[data-testid="stFileUploadDropzone"]:hover {
+    border-color: #6ee7b7 !important;
+    background: #f0fdf4 !important;
+}
+
+.stFileUploader label {
+    color: #94a3b8 !important;
+    font-size: 12px !important;
+    font-family: 'DM Sans', sans-serif !important;
+}
+
+/* ── IMAGE ──────────────────────────────────────── */
+[data-testid="stImage"] img {
+    border-radius: 10px !important;
+    border: 1px solid #e2e8f0 !important;
+    max-height: 400px !important;
+    object-fit: cover !important;
+    width: 100% !important;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08) !important;
+}
+
+/* ── PIPE TAGS ──────────────────────────────────── */
+.pipe-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 14px 28px 20px;
+}
+
+.pipe-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    padding: 4px 11px;
+    border: 1px solid #a7f3d0;
+    border-radius: 20px;
+    color: #059669;
+    background: #ecfdf5;
+    letter-spacing: 0.2px;
+}
+
+/* ── SEVERITY BANNER ────────────────────────────── */
+.sev-banner {
+    margin: 4px 28px 16px;
+    border-radius: 12px;
+    padding: 18px 20px;
+    border: 1px solid;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+.sev-banner::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(135deg, var(--glow) 0%, transparent 55%);
+    pointer-events: none;
+}
+
+.sev-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 19px;
+    font-weight: 700;
+    flex-shrink: 0;
+    border: 1px solid;
+    position: relative;
+    z-index: 1;
+}
+
+.sev-class {
+    font-size: 21px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+    line-height: 1.2;
+}
+
+.sev-sub {
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 3px;
+}
+
+/* ── METRIC GRID ────────────────────────────────── */
+.metric-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin: 0 28px 18px;
+}
+
+.metric-tile {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 15px 16px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+
+.metric-tile:hover {
+    border-color: #a7f3d0;
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.1);
+}
+
+.metric-tile-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: #94a3b8;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    margin-bottom: 9px;
+}
+
+.metric-tile-val {
+    font-family: 'Space Mono', monospace;
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.5px;
+}
+
+.metric-tile-sub {
+    font-size: 10px;
+    color: #cbd5e1;
+    margin-top: 6px;
+    font-family: 'Space Mono', monospace;
+}
+
+/* ── PROB BARS ──────────────────────────────────── */
+.prob-section {
+    margin: 0 28px 18px;
+}
+
+.prob-header {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: #94a3b8;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+}
+
+/* Streamlit progress bar override */
+.stProgress > div > div > div > div {
+    border-radius: 3px !important;
+}
+.stProgress > div > div {
+    background: #e2e8f0 !important;
+    border-radius: 3px !important;
+    height: 5px !important;
+}
+
+/* ── ALERT BOX ──────────────────────────────────── */
+.alert-wrap {
+    margin: 0 28px 24px;
+    border-radius: 10px;
+    padding: 14px 16px;
+    border-left: 3px solid;
+    border-top: 1px solid #e2e8f0;
+    border-right: 1px solid #e2e8f0;
+    border-bottom: 1px solid #e2e8f0;
+    background: #ffffff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.alert-head {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 7px;
+}
+
+.alert-body {
+    font-size: 13px;
+    color: #475569;
+    line-height: 1.65;
+}
+
+/* ── DIVIDER ────────────────────────────────────── */
+.hdivider {
+    border: none;
+    border-top: 1px solid #e2e8f0;
+    margin: 22px 28px;
+}
+
+/* ── GRADCAM ────────────────────────────────────── */
+.gcam-wrap {
+    padding: 0 28px;
+}
+
+.gcam-note {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: #94a3b8;
+    letter-spacing: 1px;
+    text-align: center;
+    margin-top: 8px;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+}
+
+/* ── MAP ────────────────────────────────────────── */
+.map-wrap {
+    padding: 0 28px;
+}
+
+.map-meta {
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 13px;
+    line-height: 1.6;
+}
+
+/* ── CALLOUT ────────────────────────────────────── */
+.callout {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 10px;
+    padding: 13px 15px;
+    margin-top: 14px;
+}
+
+.callout-icon {
+    font-size: 13px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.callout-text {
+    font-size: 12px;
+    color: #2563eb;
+    line-height: 1.65;
+}
+
+/* ── EMPTY STATE ────────────────────────────────── */
+.empty-state {
+    border: 1.5px dashed #cbd5e1;
+    border-radius: 14px;
+    padding: 72px 24px;
+    text-align: center;
+    margin: 0 28px 28px;
+    background: #ffffff;
+}
+
+.empty-icon {
+    font-size: 34px;
+    margin-bottom: 12px;
+    opacity: 0.4;
+}
+
+.empty-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: #94a3b8;
+    margin-bottom: 5px;
+}
+
+.empty-sub {
+    font-size: 12px;
+    color: #cbd5e1;
+}
+
+/* ── FOOTER ─────────────────────────────────────── */
+.site-footer {
+    margin: 48px 36px 24px;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.footer-left {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: #94a3b8;
+    letter-spacing: 0.3px;
+}
+
+.footer-tags {
+    display: flex;
+    gap: 6px;
+}
+
+.footer-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    padding: 3px 9px;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    color: #94a3b8;
+    background: #f8fafc;
+}
+
+/* ── SPINNER OVERRIDE ───────────────────────────── */
+.stSpinner > div {
+    border-color: #10b981 transparent transparent transparent !important;
+}
+
+/* ── STREAMLIT ELEMENT OVERRIDES FOR LIGHT THEME ── */
+
+/* Column backgrounds */
+[data-testid="column"] {
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+    overflow: hidden;
+}
+
+/* Make Streamlit's own text elements match */
+.stMarkdown p, .stMarkdown div {
+    color: #1a1a2e;
+}
+
+/* Caption text under images */
+[data-testid="stCaptionContainer"] p {
+    color: #94a3b8 !important;
+    font-size: 11px !important;
+    font-family: 'Space Mono', monospace !important;
+}
+
+/* File uploader text */
+[data-testid="stFileUploaderDropzoneInstructions"] {
+    color: #94a3b8 !important;
+}
+
+/* Spinner text */
+.stSpinner p {
+    color: #64748b !important;
+}
