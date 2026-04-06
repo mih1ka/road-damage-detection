@@ -1,4 +1,4 @@
-# 🛣️ RoadScan — CNN-Based Road Surface Damage Detection
+# RoadScan — CNN-Based Road Surface Damage Detection
 
 > Machine Vision · 2025–26  
 > Mihika 
