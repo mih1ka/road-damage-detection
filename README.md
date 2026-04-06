@@ -158,13 +158,6 @@ To retrain:
 ---
 
 ## Demo
-
-![Demo Image](goodroaddemo.jpeg)
-![Demo Image](goodroaddemo2.jpeg)
-![Demo Image](poordemo1.jpeg)
-![Demo Image](poordemo2.jpeg)
-
-
 > Upload a road image → get damage class, confidence, severity index, Grad-CAM heatmap, and a GPS-pinned map alert.
 
 ---
