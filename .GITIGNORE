@@ -73,4 +73,5 @@ desktop.ini
 
 # ── Colab-specific ─────────────────────────────────────
 /content/
-sample_data/
+sample_data/demo_road_gps.jpg
+road_damage_test2_model.pth

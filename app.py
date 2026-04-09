@@ -25,7 +25,6 @@ with open("style.css") as f:
 CLASS_NAMES      = ['Good', 'Poor', 'Satisfactory', 'Very Poor']
 SEVERITY_WEIGHTS = torch.tensor([0.0, 2.0, 1.0, 3.0])
 
-
 SEVERITY_CONFIG = {
     'Good': {
         'color':  '#059669',
@@ -116,6 +115,28 @@ def get_priority(si, conf):
     if score < 2.0:  return 'HIGH'
     return 'CRITICAL'
 
+def get_gps_from_image(pil_img):
+    try:
+        exif_data = pil_img._getexif()
+        if not exif_data:
+            return None
+        from PIL.ExifTags import TAGS, GPSTAGS
+        exif     = {TAGS.get(k, k): v for k, v in exif_data.items()}
+        gps_info = exif.get('GPSInfo')
+        if not gps_info:
+            return None
+        gps = {GPSTAGS.get(k, k): v for k, v in gps_info.items()}
+        def to_deg(vals):
+            d, m, s = vals
+            return float(d) + float(m) / 60 + float(s) / 3600
+        lat = to_deg(gps['GPSLatitude'])
+        lon = to_deg(gps['GPSLongitude'])
+        if gps.get('GPSLatitudeRef')  == 'S': lat = -lat
+        if gps.get('GPSLongitudeRef') == 'W': lon = -lon
+        return [lat, lon]
+    except Exception:
+        return None
+
 def generate_gradcam(mdl, tensor, cls_idx):
     grads, acts = [], []
 
@@ -144,6 +165,43 @@ def make_overlay(pil_img, cam, alpha=0.45):
     blend  = alpha * heat + (1 - alpha) * img_np
     return (np.clip(blend, 0, 1) * 255).astype(np.uint8)
 
+def draw_damage_box(pil_img, cam):
+    img_np      = np.array(pil_img.resize((224, 224))).copy()
+    cam_resized = cv2.resize(cam, (224, 224))
+
+    # keep only regions above 60% of peak activation
+    threshold = 0.6 * cam_resized.max()
+    hot_mask  = (cam_resized >= threshold).astype(np.uint8)
+
+    # find individual damage contours
+    contours, _ = cv2.findContours(hot_mask, cv2.RETR_EXTERNAL,
+                                    cv2.CHAIN_APPROX_SIMPLE)
+    boxes = []
+    for cnt in contours:
+        if cv2.contourArea(cnt) > 100:   # ignore tiny specks
+            x, y, w, h = cv2.boundingRect(cnt)
+            boxes.append((x, y, w, h))
+            cv2.rectangle(img_np, (x, y), (x + w, y + h),
+                          (220, 38, 38), 2)
+            cv2.putText(img_np, "Damage",
+                        (x, max(y - 6, 10)),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.4, (220, 38, 38), 1, cv2.LINE_AA)
+
+    return img_np, boxes
+
+def extract_damage_crops(pil_img, boxes):
+    img_np = np.array(pil_img.resize((224, 224)))
+    crops  = []
+    for (x, y, w, h) in boxes:
+        pad = 10
+        x1  = max(x - pad, 0)
+        y1  = max(y - pad, 0)
+        x2  = min(x + w + pad, 224)
+        y2  = min(y + h + pad, 224)
+        crops.append(img_np[y1:y2, x1:x2])
+    return crops
+
 # ── TOPBAR ────────────────────────────────────────────────────────────────────
 st.markdown("""
 <div class="topbar">
@@ -165,25 +223,28 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ── FILE UPLOAD (top level so inference vars are available everywhere) ─────────
+# ── FILE UPLOAD ───────────────────────────────────────────────────────────────
 uploaded = st.file_uploader(
     "Upload a road surface image",
     type=["jpg", "jpeg", "png"],
     label_visibility="collapsed"
 )
 
-# ── RUN INFERENCE IMMEDIATELY so stats bar can use results ────────────────────
-img       = None
-pred_name = None
-conf      = None
-si        = None
-priority  = None
-cfg       = None
-probs     = None
-pred_idx  = None
+# ── RUN INFERENCE ─────────────────────────────────────────────────────────────
+img              = None
+pred_name        = None
+conf             = None
+si               = None
+priority         = None
+cfg              = None
+probs            = None
+pred_idx         = None
+coords_from_exif = None
 
 if uploaded:
-    img = Image.open(uploaded).convert('RGB')
+    raw_img          = Image.open(uploaded)
+    coords_from_exif = get_gps_from_image(raw_img)
+    img              = raw_img.convert('RGB')
 
     tensor = preprocess(img).unsqueeze(0)
     tensor.requires_grad_(True)
@@ -200,7 +261,7 @@ if uploaded:
     priority  = get_priority(si, conf)
     cfg       = SEVERITY_CONFIG[pred_name]
 
-# ── STATS BAR (only when results exist) ──────────────────────────────────────
+# ── STATS BAR ─────────────────────────────────────────────────────────────────
 if pred_name:
     p_color = cfg['color']
     st.markdown(f"""
@@ -243,14 +304,12 @@ with col1:
     """, unsafe_allow_html=True)
 
     if img:
-        # Image
         st.markdown('<div style="padding:0 28px">', unsafe_allow_html=True)
         st.image(img,
                  caption="Original Image · Road Image Acquisition",
                  use_container_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-        # Pipeline tags
         st.markdown("""
         <div class="pipe-row">
         <div class="pipe-tag">① Resize 224×224</div>
@@ -259,8 +318,6 @@ with col1:
         </div>
         """, unsafe_allow_html=True)
 
-
-        # Severity banner
         st.markdown(f"""
         <div class="sev-banner"
              style="background:{cfg['bg']};
@@ -282,7 +339,6 @@ with col1:
         </div>
         """, unsafe_allow_html=True)
 
-        # Metric tiles
         st.markdown(f"""
         <div class="metric-grid">
           <div class="metric-tile">
@@ -306,7 +362,6 @@ with col1:
         </div>
         """, unsafe_allow_html=True)
 
-        # Probability bars — native Streamlit to avoid HTML rendering bug
         st.markdown("""
         <div class="prob-section">
           <div class="prob-header">Class Probability Distribution</div>
@@ -317,10 +372,8 @@ with col1:
             for i, name in enumerate(CLASS_NAMES):
                 p      = probs[i].item()
                 is_top = (i == pred_idx)
-                color  = PROB_COLORS[name]
 
                 label_col, bar_col, pct_col = st.columns([1.8, 5, 1])
-
                 with label_col:
                     st.markdown(
                         f'<div style="font-family:Space Mono,monospace;'
@@ -341,7 +394,6 @@ with col1:
                         unsafe_allow_html=True
                     )
 
-        # Alert
         st.markdown(f"""
         <div class="alert-wrap" style="border-left-color:{cfg['color']}">
           <div class="alert-head" style="color:{cfg['color']}">
@@ -374,7 +426,7 @@ with col2:
 
     if img:
 
-        # ── Grad-CAM ──────────────────────────────────
+        # ── Grad-CAM + damage localization ────────────
         st.markdown('<div class="gcam-wrap">', unsafe_allow_html=True)
         try:
             cam_t = preprocess(img).unsqueeze(0)
@@ -382,15 +434,55 @@ with col2:
             cam     = generate_gradcam(model, cam_t, pred_idx)
             overlay = make_overlay(img, cam)
 
-            gc1, gc2 = st.columns(2)
-            with gc1:
-                st.image(img.resize((224, 224)),
-                         caption="Input",
-                         use_container_width=True)
-            with gc2:
-                st.image(overlay,
-                         caption="Grad-CAM Overlay",
-                         use_container_width=True)
+            if pred_name in ['Poor', 'Very Poor']:
+                boxed_img, boxes = draw_damage_box(img, cam)
+                crops = extract_damage_crops(img, boxes)
+
+                # ── Row 1: input | grad-cam ────────────
+                gc1, gc2 = st.columns(2)
+                with gc1:
+                    st.image(img.resize((224, 224)),
+                             caption="Input",
+                             use_container_width=True)
+                with gc2:
+                    st.image(overlay,
+                             caption="Grad-CAM",
+                             use_container_width=True)
+
+                st.markdown('<div style="margin-top:10px"></div>',
+                            unsafe_allow_html=True)
+
+                # ── Row 2: damage boxed | damage crop ──
+                if crops:
+                    dc1, dc2 = st.columns(2)
+                    with dc1:
+                        st.image(boxed_img,
+                                 caption="Damage localized",
+                                 use_container_width=True)
+                    with dc2:
+                        # show the largest crop if multiple regions
+                        largest = max(crops,
+                                      key=lambda c: c.shape[0] * c.shape[1])
+                        st.image(largest,
+                                 caption="Extracted damage region",
+                                 use_container_width=True)
+                else:
+                    st.image(boxed_img,
+                             caption="Damage localized",
+                             use_container_width=True)
+
+            else:
+                # Good / Satisfactory — original + heatmap only
+                gc1, gc2 = st.columns(2)
+                with gc1:
+                    st.image(img.resize((224, 224)),
+                             caption="Input",
+                             use_container_width=True)
+                with gc2:
+                    st.image(overlay,
+                             caption="Grad-CAM",
+                             use_container_width=True)
+            
 
             st.markdown("""
             <div class="gcam-note">
@@ -404,42 +496,18 @@ with col2:
             st.warning(f"Grad-CAM unavailable: {e}")
 
         st.markdown('</div>', unsafe_allow_html=True)
-
         st.markdown('<hr class="hdivider">', unsafe_allow_html=True)
 
         # ── Map ───────────────────────────────────────
-        
-
-        def get_gps_from_image(pil_img):
-            try:
-                exif_data = pil_img._getexif()
-                if not exif_data:
-                    return None
-                from PIL.ExifTags import TAGS, GPSTAGS
-                exif = {TAGS.get(k, k): v for k, v in exif_data.items()}
-                gps_info = exif.get('GPSInfo')
-                if not gps_info:
-                    return None
-                gps = {GPSTAGS.get(k, k): v for k, v in gps_info.items()}
-                def to_deg(vals):
-                    d, m, s = vals
-                    return float(d) + float(m)/60 + float(s)/3600
-                lat = to_deg(gps['GPSLatitude'])
-                lon = to_deg(gps['GPSLongitude'])
-                if gps.get('GPSLatitudeRef')  == 'S': lat = -lat
-                if gps.get('GPSLongitudeRef') == 'W': lon = -lon
-                return [lat, lon]
-            except Exception:
-                return None
-            
-        coords   = get_gps_from_image(img) or [12.9716, 77.5946]
-        gps_note = "Live GPS from image EXIF" if get_gps_from_image(img) else "Simulated location (no EXIF data found)"
+        coords   = coords_from_exif or [12.9716, 77.5946]
+        gps_note = "Live GPS from image EXIF" if coords_from_exif else "Simulated location (no EXIF data found)"
 
         m = folium.Map(
             location=coords,
             zoom_start=15,
             tiles='CartoDB positron'
         )
+
         st.markdown(f"""
         <div class="map-wrap">
           <div class="col-label">Location-Based Alert</div>
@@ -449,7 +517,7 @@ with col2:
           <div class="map-meta">
             {gps_note}. Severity and priority are embedded in the marker.
             Simulates a dashcam logging GPS coordinates at the point of
-            damage detection. Severity and priority are embedded in the marker.
+            damage detection.
           </div>
         </div>
         """, unsafe_allow_html=True)
